@@ -1,0 +1,16 @@
+<svg width="1600" height="800" viewBox="0 0 1600 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="splashGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0057b8"/>
+      <stop offset="100%" stop-color="#0a84ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="800" fill="url(#splashGradient)"/>
+  <text x="120" y="360" font-family="Segoe UI, Arial" font-size="160" font-weight="700" fill="#ffffff">KSIT AR</text>
+  <text x="120" y="460" font-family="Segoe UI, Arial" font-size="72" font-weight="400" fill="#cfe9ff">Campus Explorer</text>
+  <circle cx="1200" cy="360" r="210" fill="none" stroke="#ffffff" stroke-width="12"/>
+  <line x1="1200" y1="150" x2="1200" y2="570" stroke="#ffffff" stroke-width="12"/>
+</svg>
+
+
+
