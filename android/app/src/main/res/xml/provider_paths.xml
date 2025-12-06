@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- For Android 10+ (API 29+), use external-files-path -->
+    <external-files-path name="external_files" path="."/>
+    <!-- Legacy support for older Android versions -->
+    <external-path name="external" path="."/>
+    <!-- Support for files directory -->
+    <files-path name="files" path="."/>
+</paths>
