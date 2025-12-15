@@ -3,6 +3,7 @@ import {View, StyleSheet, StatusBar} from 'react-native';
 import LottieView from 'lottie-react-native';
 import {Text, useTheme} from 'react-native-paper';
 import {useAuth} from '../context/AuthContext';
+import LinearGradient from 'react-native-linear-gradient';
 
 export const SplashScreen = () => {
   const {completeSplash} = useAuth();
@@ -14,15 +15,20 @@ export const SplashScreen = () => {
   }, [completeSplash]);
 
   return (
-    <View style={[styles.container, {backgroundColor: theme.colors.primary}]}>
-      <StatusBar translucent backgroundColor="transparent" />
+    <LinearGradient
+      colors={[theme.colors.primary, theme.colors.secondary || '#8B5CF6']}
+      start={{x: 0, y: 0}}
+      end={{x: 1, y: 1}}
+      style={styles.container}>
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+      
+      {/* Card with Lottie Animation */}
       <View
         style={[
           styles.card,
           {
-            backgroundColor: theme.colors.surface,
-            shadowColor:
-              (theme.colors as any).shadowSoft ?? theme.colors.primary,
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            shadowColor: '#000000',
           },
         ]}>
         <LottieView
@@ -32,13 +38,22 @@ export const SplashScreen = () => {
           style={styles.lottie}
         />
       </View>
-      <Text variant="headlineMedium" style={styles.title}>
-        KSIT AR Campus Explorer
+
+      {/* Title */}
+      <Text variant="headlineLarge" style={styles.title}>
+        KSIT AR Explorer
       </Text>
-      <Text variant="bodyMedium" style={styles.subtitle}>
-        Immerse yourself in the future of campus navigation.
+
+      {/* Subtitle */}
+      <Text variant="bodyLarge" style={styles.subtitle}>
+        Explore Campus in Augmented Reality
       </Text>
-    </View>
+
+      {/* Loading Spinner */}
+      <View style={styles.loader}>
+        <View style={styles.spinner} />
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -55,11 +70,12 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 10,
+    marginBottom: 24,
+    shadowOffset: {width: 0, height: 14},
     shadowOpacity: 0.3,
     shadowRadius: 20,
-    shadowOffset: {width: 0, height: 14},
-    marginBottom: 24,
+    elevation: 10,
+    backdropFilter: 'blur(10px)',
   },
   lottie: {
     width: 210,
@@ -67,13 +83,30 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#FFFFFF',
-    marginTop: 4,
+    fontWeight: '700',
+    marginTop: 8,
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   subtitle: {
     color: '#E8F1FF',
-    marginTop: 8,
+    marginTop: 12,
     textAlign: 'center',
+    lineHeight: 24,
+    opacity: 0.95,
+  },
+  loader: {
+    marginTop: 32,
+  },
+  spinner: {
+    width: 40,
+    height: 40,
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderTopColor: '#FFFFFF',
+    borderRadius: 20,
+    // Note: You'll need to add rotation animation using Animated API
   },
 });
+
 export default SplashScreen;

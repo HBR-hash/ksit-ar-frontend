@@ -1,6 +1,6 @@
 // src/screens/LoginScreen.tsx
 import React, { useState } from 'react';
-import { StyleSheet, View, Image, Platform } from 'react-native';
+import { StyleSheet, View, Image, Platform, ScrollView } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   HelperText,
@@ -9,6 +9,7 @@ import {
   Card,
   useTheme,
 } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/Feather';
 import { AuthStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../context/AuthContext';
 import { ScreenContainer } from '../components/ScreenContainer';
@@ -24,6 +25,7 @@ export const LoginScreen = ({ navigation }: Props) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     setError(null);
@@ -39,215 +41,269 @@ export const LoginScreen = ({ navigation }: Props) => {
 
   return (
     <ScreenContainer centerContent>
-      {/* 🟦 Header Section */}
-      <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/ksit_logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.title}>Welcome back 👋</Text>
-        <Text style={styles.subtitle}>Sign in to explore KSIT Campus</Text>
-      </View>
-
-      {/* ⚪ Form Card */}
-      <KSITCardWrapper>
-        <Card.Content>
-
-          <TextInput
-            label="Email"
-            mode="outlined"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            style={styles.input}
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}>
+        
+        {/* 🟦 Header Section */}
+        <View style={styles.header}>
+          <Image
+            source={require('../../assets/images/ksit_logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
           />
+          <Text variant="headlineMedium" style={[styles.title, { color: theme.colors.onBackground }]}>
+            Welcome Back
+          </Text>
+          <Text variant="bodyMedium" style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>
+            Sign in to explore KSIT campus
+          </Text>
+        </View>
 
-          <TextInput
-            label="Password"
-            mode="outlined"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-            style={styles.input}
-          />
+        {/* ⚪ Form Card */}
+        <KSITCardWrapper theme={theme}>
+          <Card.Content style={styles.cardContent}>
 
-          {error && <HelperText type="error">{error}</HelperText>}
+            {/* Email Input with Icon */}
+            <View style={styles.inputContainer}>
+              <Text variant="labelMedium" style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>
+                EMAIL ADDRESS
+              </Text>
+              <View style={styles.inputWrapper}>
+                <Icon 
+                  name="mail" 
+                  size={20} 
+                  color={theme.colors.onSurfaceVariant} 
+                  style={styles.inputIcon} 
+                />
+                <TextInput
+                  mode="outlined"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  placeholder="your.email@ksit.edu.in"
+                  style={styles.input}
+                  contentStyle={styles.inputContent}
+                  outlineStyle={styles.inputOutline}
+                  left={<TextInput.Icon icon={() => <View style={{ width: 40 }} />} />}
+                />
+              </View>
+            </View>
+
+            {/* Password Input with Icon */}
+            <View style={styles.inputContainer}>
+              <Text variant="labelMedium" style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>
+                PASSWORD
+              </Text>
+              <View style={styles.inputWrapper}>
+                <Icon 
+                  name="lock" 
+                  size={20} 
+                  color={theme.colors.onSurfaceVariant} 
+                  style={styles.inputIcon} 
+                />
+                <TextInput
+                  mode="outlined"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter your password"
+                  style={styles.input}
+                  contentStyle={styles.inputContent}
+                  outlineStyle={styles.inputOutline}
+                  left={<TextInput.Icon icon={() => <View style={{ width: 40 }} />} />}
+                  right={
+                    <TextInput.Icon 
+                      icon={showPassword ? "eye-off" : "eye"}
+                      onPress={() => setShowPassword(!showPassword)}
+                    />
+                  }
+                />
+              </View>
+            </View>
+
+            {error && (
+              <HelperText type="error" visible={!!error} style={styles.errorText}>
+                {error}
+              </HelperText>
+            )}
+
+            {/* Login Button */}
+            <KSITButton
+              onPress={handleLogin}
+              loading={loading}
+              disabled={loading}
+              style={[styles.primaryBtn, { backgroundColor: theme.colors.primary }]}
+              labelStyle={styles.primaryBtnLabel}
+              icon={() => <Icon name="arrow-right" size={20} color="#FFFFFF" />}
+              contentStyle={styles.primaryBtnContent}
+            >
+              Sign In
+            </KSITButton>
+
+            {/* Forgot Password */}
+            <KSITButton
+              mode="text"
+              onPress={() => navigation.navigate('ForgotPassword')}
+              style={styles.forgot}
+              labelStyle={{ color: theme.colors.primary }}
+              compact
+            >
+              Forgot Password?
+            </KSITButton>
+
+          </Card.Content>
+        </KSITCardWrapper>
+
+        {/* 📝 Footer */}
+        <View style={styles.footer}>
+          <Text variant="bodyMedium" style={[styles.footerText, { color: theme.colors.onSurfaceVariant }]}>
+            Don't have an account?
+          </Text>
 
           <KSITButton
-            onPress={handleLogin}
-            loading={loading}
-            disabled={loading}
-            style={styles.primaryBtn}
+            mode="outlined"
+            onPress={() => navigation.navigate('Register')}
+            style={[styles.createBtn, { borderColor: theme.colors.primary }]}
+            labelStyle={{ color: theme.colors.primary, fontWeight: '600' }}
+            contentStyle={styles.createBtnContent}
           >
-            Login
+            Create Account
           </KSITButton>
+        </View>
 
-          <KSITButton
-            mode="text"
-            onPress={() => navigation.navigate('ForgotPassword')}
-            style={styles.forgot}
-            labelStyle={{ color: theme.colors.primary }}
-          >
-            Forgot password?
-          </KSITButton>
-
-        </Card.Content>
-      </KSITCardWrapper>
-
-      {/* 📝 Footer */}
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>New to KSIT AR Campus Explorer?</Text>
-
-        <KSITButton
-          mode="outlined"
-          onPress={() => navigation.navigate('Register')}
-          style={styles.createBtn}
-          labelStyle={{ color: theme.colors.primary, fontWeight: '600' }}
-        >
-          Create an account
-        </KSITButton>
-      </View>
+      </ScrollView>
     </ScreenContainer>
   );
 };
 
-const KSITCardWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <Card style={styles.card} mode="elevated">{children}</Card>;
+const KSITCardWrapper: React.FC<{ children: React.ReactNode; theme: any }> = ({ children, theme }) => {
+  return (
+    <Card 
+      style={[styles.card, { 
+        backgroundColor: theme.colors.surface,
+        borderColor: theme.colors.outlineVariant,
+      }]} 
+      mode="elevated"
+      elevation={3}
+    >
+      {children}
+    </Card>
+  );
 };
 
-
 const styles = StyleSheet.create({
-  // ⬆️ Added more vertical breathing space for a premium feel
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+  },
+
   header: {
-    paddingTop: Platform.OS === 'ios' ? 48 : 32, // increased
-    paddingBottom: 28, // increased
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+    paddingBottom: 32,
     alignItems: 'center',
   },
 
   logo: {
-    width: 100, // slightly bigger for visual balance
+    width: 100,
     height: 72,
-    marginBottom: 14,
+    marginBottom: 16,
   },
 
-  // 🔤 Improved typography: bigger, more premium looking
   title: {
-    fontSize: 28, // was 24
     fontWeight: '700',
-    color: '#0A1120',
-    marginBottom: 8, // increased
-    letterSpacing: 0.3, // added for modern look
+    marginBottom: 8,
+    letterSpacing: 0.3,
     textAlign: 'center',
   },
 
-  // 🔤 Cleaner subtitle for competitive UI
   subtitle: {
-    fontSize: 14, // was 13
-    color: '#6B7280', // softer grey (was #374151)
     textAlign: 'center',
-    paddingHorizontal: 36, // slightly larger padding
-    letterSpacing: 0.2, // modern typography
+    letterSpacing: 0.2,
   },
 
-  // 🃏 Card now looks cleaner and more premium with shadows
   card: {
-    borderRadius: 22, // slightly smoother corners
-    paddingVertical: 14, // increased
-    paddingHorizontal: 8,
-    marginBottom: 20,
-    elevation: 3, // added soft elevation (Android)
-    shadowColor: '#000', // added subtle shadow (iOS)
+    borderRadius: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+
+  cardContent: {
+    padding: 24,
+  },
+
+  inputContainer: {
+    marginBottom: 16,
+  },
+
+  label: {
+    marginBottom: 8,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    fontSize: 12,
+  },
+
+  inputWrapper: {
+    position: 'relative',
+  },
+
+  inputIcon: {
+    position: 'absolute',
+    left: 16,
+    top: 16,
+    zIndex: 1,
   },
 
   input: {
-    marginBottom: 16, // slightly increased spacing
+    marginBottom: 0,
+    backgroundColor: 'transparent',
   },
 
-  // 🔘 Primary button improved for better touch usability
+  inputContent: {
+    paddingLeft: 8,
+  },
+
+  inputOutline: {
+    borderRadius: 12,
+    borderWidth: 2,
+  },
+
+  errorText: {
+    marginTop: -8,
+    marginBottom: 8,
+  },
+
   primaryBtn: {
-    marginTop: 10,
-    height: 50, // added
-    borderRadius: 14, // added modern rounding
-    justifyContent: 'center', // vertically center text
+    marginTop: 16,
+    height: 52,
+    borderRadius: 12,
+    elevation: 4,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+
+  primaryBtnLabel: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+
+  primaryBtnContent: {
+    height: 52,
+    flexDirection: 'row-reverse',
   },
 
   forgot: {
-    marginTop: 6,
-    alignSelf: 'center',
-  },
-
-  footer: {
-    marginTop: 26, // small increase
-    alignItems: 'center',
-  },
-
-  footerText: {
-    fontSize: 15, // slightly bigger
-    color: '#6B7280', // modern softer grey
-    marginBottom: 10,
-  },
-
-  // 🔲 Outlined button looks more modern now
-  createBtn: {
-    borderRadius: 16, // softer corner
-    width: '80%',
-    height: 48, // consistent with Login button
-    borderWidth: 1.5, // stronger outline
-    alignItems: 'center',
-    justifyContent: 'center', // vertically center text
-  },
-});
-
-/*const styles = StyleSheet.create({
-  header: {
-    paddingTop: Platform.OS === 'ios' ? 40 : 24,
-    paddingBottom: 24,
-    alignItems: 'center',
-  },
-
-  logo: {
-    width: 96,
-    height: 68,
-    marginBottom: 12,
-  },
-
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#0A1120',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-
-  subtitle: {
-    fontSize: 13,
-    color: '#374151',
-    textAlign: 'center',
-    paddingHorizontal: 32,
-  },
-
-  card: {
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-    marginBottom: 18,
-  },
-
-  input: {
-    marginBottom: 14,
-  },
-
-  primaryBtn: {
     marginTop: 8,
-  },
-
-  forgot: {
-    marginTop: 4,
     alignSelf: 'center',
   },
 
@@ -257,16 +313,17 @@ const styles = StyleSheet.create({
   },
 
   footerText: {
-    fontSize: 14,
-    color: '#374151',
-    marginBottom: 8,
+    marginBottom: 16,
   },
 
   createBtn: {
-    borderRadius: 14,
+    borderRadius: 12,
     width: '80%',
-	alignItems: 'center',
+    height: 52,
+    borderWidth: 2,
+  },
+
+  createBtnContent: {
+    height: 52,
   },
 });
-*/
-export default LoginScreen;

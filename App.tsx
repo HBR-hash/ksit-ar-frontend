@@ -1,28 +1,30 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import {Provider as PaperProvider} from 'react-native-paper';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {AuthProvider} from './src/context/AuthContext';
-import {useAppTheme} from './src/theme';
+import {ThemeProvider, useThemeContext} from './src/context/ThemeContext';
 import {AppNavigator} from './src/navigation/AppNavigator';
 
-function App(): React.JSX.Element {
-  const theme = useAppTheme();
+// Inner component that uses the theme
+function AppContent() {
+  const {theme} = useThemeContext();
 
   return (
+    <PaperProvider theme={theme}>
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
+    </PaperProvider>
+  );
+}
+
+function App(): React.JSX.Element {
+  return (
     <GestureHandlerRootView style={styles.root}>
-      <PaperProvider theme={theme}>
-        <AuthProvider>
-          <AppNavigator />
-        </AuthProvider>
-      </PaperProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }

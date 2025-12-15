@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { StyleSheet } from "react-native";
+import React, { useState, useRef } from "react";
+import { StyleSheet, View, ScrollView, TextInput as RNTextInput } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import {
   Button,
@@ -8,6 +8,7 @@ import {
   TextInput,
   useTheme,
 } from "react-native-paper";
+import Icon from 'react-native-vector-icons/Feather';
 import { AuthStackParamList } from "../navigation/AppNavigator";
 import { useAuth } from "../context/AuthContext";
 import { ScreenContainer } from "../components/ScreenContainer";
@@ -26,6 +27,28 @@ export const OTPScreen = ({ route, navigation }: Props) => {
   const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resends, setResends] = useState(0);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const inputRefs = useRef<RNTextInput[]>([]);
+
+  const handleOTPChange = (text: string, index: number) => {
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+    
+    // Update the main code state
+    setCode(newOtp.join(''));
+
+    // Auto focus next input
+    if (text && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
 
   const handleVerify = async () => {
     setError(null);
@@ -66,76 +89,192 @@ export const OTPScreen = ({ route, navigation }: Props) => {
 
   return (
     <ScreenContainer centerContent>
-      <Text style={styles.title}>Verify your phone</Text>
-      <Text style={styles.subtitle}>OTP sent to {phone}</Text>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
+        
+        {/* Icon Circle */}
+        <View style={[styles.iconCircle, { backgroundColor: `${theme.colors.primary}20` }]}>
+          <Icon name="smartphone" size={32} color={theme.colors.primary} />
+        </View>
 
-      {/* OTP Input */}
-      <TextInput
-        label="Enter 6-digit OTP"
-        mode="outlined"
-        keyboardType="number-pad"
-        maxLength={6}
-        value={code}
-        onChangeText={setCode}
-        style={styles.input}
-      />
+        {/* Header */}
+        <Text variant="headlineMedium" style={[styles.title, { color: theme.colors.onBackground }]}>
+          Verify Your Phone Number
+        </Text>
+        <Text variant="bodyMedium" style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>
+          We've sent a 6-digit code to
+        </Text>
+        <Text variant="bodyMedium" style={[styles.phone, { color: theme.colors.primary }]}>
+          {phone}
+        </Text>
 
-      {error && <HelperText type="error">{error}</HelperText>}
-      {info && <HelperText type="info">{info}</HelperText>}
+        {/* OTP Input Boxes */}
+        <View style={styles.otpContainer}>
+          {otp.map((digit, index) => (
+            <TextInput
+              key={index}
+              ref={(ref) => {
+                if (ref) {
+                  inputRefs.current[index] = ref as any;
+                }
+              }}
+              mode="outlined"
+              value={digit}
+              onChangeText={(text) => handleOTPChange(text, index)}
+              onKeyPress={(e) => handleKeyPress(e, index)}
+              keyboardType="number-pad"
+              maxLength={1}
+              style={[styles.otpInput, { 
+                backgroundColor: theme.colors.surface,
+              }]}
+              outlineStyle={[styles.otpInputOutline, {
+                borderColor: digit ? theme.colors.primary : theme.colors.outline,
+                borderWidth: digit ? 2 : 1,
+              }]}
+              textColor={theme.colors.onSurface}
+            />
+          ))}
+        </View>
 
-      {/* Verify Button */}
-      <KSITButton
-        onPress={handleVerify}
-        loading={loading}
-        disabled={loading}
-        style={styles.cta}
-      >
-        Verify & Continue
-      </KSITButton>
+        {error && (
+          <HelperText type="error" visible={!!error} style={styles.errorText}>
+            {error}
+          </HelperText>
+        )}
+        {info && (
+          <HelperText type="info" visible={!!info} style={styles.infoText}>
+            {info}
+          </HelperText>
+        )}
 
-      {/* Resend OTP */}
-      <Button
-        mode="text"
-        onPress={handleResend}
-        disabled={resends >= 3}
-        labelStyle={{
-          color: theme.colors.primary,
-          fontWeight: "600",
-        }}
-      >
-        Resend OTP ({3 - resends} left)
-      </Button>
+        {/* Verify Button */}
+        <KSITButton
+          onPress={handleVerify}
+          loading={loading}
+          disabled={loading || code.length !== 6}
+          style={[styles.cta, { 
+            backgroundColor: theme.colors.primary,
+            opacity: code.length !== 6 ? 0.5 : 1,
+          }]}
+          labelStyle={styles.ctaLabel}
+          icon={() => <Icon name="check-circle" size={20} color="#FFFFFF" />}
+          contentStyle={styles.ctaContent}>
+          Verify Code
+        </KSITButton>
+
+        {/* Resend OTP */}
+        <View style={styles.resendContainer}>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            Didn't receive code?{' '}
+          </Text>
+          <Button
+            mode="text"
+            onPress={handleResend}
+            disabled={resends >= 3}
+            labelStyle={{
+              color: resends >= 3 ? theme.colors.onSurfaceVariant : theme.colors.primary,
+              fontWeight: "600",
+              fontSize: 14,
+            }}
+            compact
+            style={styles.resendBtn}>
+            Resend ({3 - resends} left)
+          </Button>
+        </View>
+
+      </ScrollView>
     </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 28,
-    justifyContent: "center",
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 32,
+    alignItems: 'center',
+  },
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
-    textAlign: "center",
-    color: "#0A1120",
+    fontWeight: '700',
+    textAlign: 'center',
     marginBottom: 8,
+    letterSpacing: 0.3,
   },
   subtitle: {
-    textAlign: "center",
-    fontSize: 14,
-    color: "#374151",
-    marginBottom: 18,
+    textAlign: 'center',
+    lineHeight: 22,
+    letterSpacing: 0.2,
   },
-  input: {
-    marginBottom: 12,
+  phone: {
+    textAlign: 'center',
+    fontWeight: '600',
+    marginTop: 4,
+    marginBottom: 32,
+  },
+  otpContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 24,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  otpInput: {
+    width: 48,
+    height: 56,
+    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  otpInputOutline: {
     borderRadius: 12,
   },
+  errorText: {
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  infoText: {
+    marginBottom: 8,
+    textAlign: 'center',
+  },
   cta: {
+    width: '100%',
+    height: 52,
+    borderRadius: 12,
     marginTop: 8,
-    borderRadius: 14,
+    elevation: 4,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  ctaLabel: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  ctaContent: {
+    height: 52,
+    flexDirection: 'row-reverse',
+  },
+  resendContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  resendBtn: {
+    marginLeft: -8,
   },
 });
-
-export default OTPScreen;

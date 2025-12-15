@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, View, ScrollView} from 'react-native';
 import {Button, HelperText, Text, TextInput, useTheme} from 'react-native-paper';
+import Icon from 'react-native-vector-icons/Feather';
 import {useAuth} from '../context/AuthContext';
 import {ScreenContainer} from '../components/ScreenContainer';
 import {KSITButton} from '../components/KSITButton';
@@ -13,6 +14,7 @@ export const ResetPasswordScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resends, setResends] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (key:string, value:string) => setForm(prev=>({...prev,[key]:value}));
 
@@ -40,66 +42,251 @@ export const ResetPasswordScreen = () => {
 
   return (
     <ScreenContainer centerContent>
-      <Text variant="headlineSmall" style={styles.title}>Reset password</Text>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled">
+        
+        {/* Icon Circle */}
+        <View style={[styles.iconCircle, { backgroundColor: `${theme.colors.primary}20` }]}>
+          <Icon name="lock" size={32} color={theme.colors.primary} />
+        </View>
 
-      <TextInput
-        label="Registered Phone"
-        mode="outlined"
-        keyboardType="phone-pad"
-        value={form.phone}
-        onChangeText={v=>handleChange('phone',v)}
-        style={styles.input}
-      />
-      <TextInput
-        label="OTP Code"
-        mode="outlined"
-        keyboardType="number-pad"
-        value={form.code}
-        onChangeText={v=>handleChange('code',v)}
-        style={styles.input}
-        maxLength={6}
-      />
-      <TextInput
-        label="New Password"
-        mode="outlined"
-        secureTextEntry
-        value={form.newPassword}
-        onChangeText={v=>handleChange('newPassword',v)}
-        style={styles.input}
-      />
-      {error && <HelperText type="error">{error}</HelperText>}
-      {status && <HelperText type="info">{status}</HelperText>}
+        {/* Header */}
+        <Text variant="headlineMedium" style={[styles.title, { color: theme.colors.onBackground }]}>
+          Reset Password
+        </Text>
+        <Text variant="bodyMedium" style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}>
+          Enter the OTP sent to your phone and create a new password
+        </Text>
 
-      <KSITButton
-        onPress={handleReset}
-        loading={loading}
-        disabled={loading}
-        style={styles.cta}>
-        Update Password
-      </KSITButton>
+        {/* Phone Input */}
+        <View style={styles.inputContainer}>
+          <Text variant="labelMedium" style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>
+            REGISTERED PHONE
+          </Text>
+          <View style={styles.inputWrapper}>
+            <Icon 
+              name="phone" 
+              size={20} 
+              color={theme.colors.onSurfaceVariant} 
+              style={styles.inputIcon} 
+            />
+            <TextInput
+              mode="outlined"
+              keyboardType="phone-pad"
+              value={form.phone}
+              onChangeText={v=>handleChange('phone',v)}
+              placeholder="Enter your phone number"
+              style={styles.input}
+              contentStyle={styles.inputContent}
+              outlineStyle={styles.inputOutline}
+              left={<TextInput.Icon icon={() => <View style={{ width: 40 }} />} />}
+            />
+          </View>
+        </View>
 
-      <Button
-        mode="text"
-        onPress={handleResend}
-        disabled={resends>=3}
-        textColor={theme.colors.primary}>
-        Resend OTP ({3-resends} left)
-      </Button>
+        {/* OTP Input */}
+        <View style={styles.inputContainer}>
+          <Text variant="labelMedium" style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>
+            OTP CODE
+          </Text>
+          <View style={styles.inputWrapper}>
+            <Icon 
+              name="shield" 
+              size={20} 
+              color={theme.colors.onSurfaceVariant} 
+              style={styles.inputIcon} 
+            />
+            <TextInput
+              mode="outlined"
+              keyboardType="number-pad"
+              value={form.code}
+              onChangeText={v=>handleChange('code',v)}
+              maxLength={6}
+              placeholder="Enter 6-digit OTP"
+              style={styles.input}
+              contentStyle={styles.inputContent}
+              outlineStyle={styles.inputOutline}
+              left={<TextInput.Icon icon={() => <View style={{ width: 40 }} />} />}
+            />
+          </View>
+        </View>
+
+        {/* New Password Input */}
+        <View style={styles.inputContainer}>
+          <Text variant="labelMedium" style={[styles.label, { color: theme.colors.onSurfaceVariant }]}>
+            NEW PASSWORD
+          </Text>
+          <View style={styles.inputWrapper}>
+            <Icon 
+              name="lock" 
+              size={20} 
+              color={theme.colors.onSurfaceVariant} 
+              style={styles.inputIcon} 
+            />
+            <TextInput
+              mode="outlined"
+              secureTextEntry={!showPassword}
+              value={form.newPassword}
+              onChangeText={v=>handleChange('newPassword',v)}
+              placeholder="Create a new password"
+              style={styles.input}
+              contentStyle={styles.inputContent}
+              outlineStyle={styles.inputOutline}
+              left={<TextInput.Icon icon={() => <View style={{ width: 40 }} />} />}
+              right={
+                <TextInput.Icon 
+                  icon={showPassword ? "eye-off" : "eye"}
+                  onPress={() => setShowPassword(!showPassword)}
+                />
+              }
+            />
+          </View>
+        </View>
+
+        {error && (
+          <HelperText type="error" visible={!!error} style={styles.errorText}>
+            {error}
+          </HelperText>
+        )}
+        {status && (
+          <HelperText type="info" visible={!!status} style={styles.statusText}>
+            {status}
+          </HelperText>
+        )}
+
+        {/* Update Button */}
+        <KSITButton
+          onPress={handleReset}
+          loading={loading}
+          disabled={loading}
+          style={[styles.cta, { backgroundColor: theme.colors.primary }]}
+          labelStyle={styles.ctaLabel}
+          icon={() => <Icon name="check-circle" size={20} color="#FFFFFF" />}
+          contentStyle={styles.ctaContent}>
+          Update Password
+        </KSITButton>
+
+        {/* Resend OTP */}
+        <View style={styles.resendContainer}>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            Didn't receive OTP?{' '}
+          </Text>
+          <Button
+            mode="text"
+            onPress={handleResend}
+            disabled={resends>=3}
+            textColor={resends >= 3 ? theme.colors.onSurfaceVariant : theme.colors.primary}
+            labelStyle={styles.resendLabel}
+            compact>
+            Resend ({3-resends} left)
+          </Button>
+        </View>
+
+      </ScrollView>
     </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  title:{
-    marginBottom:12,
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 32,
+    alignItems: 'center',
+  },
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  title: {
+    fontWeight: '700',
     textAlign: 'center',
+    marginBottom: 8,
+    letterSpacing: 0.3,
   },
-  input:{
-    marginBottom:12,
+  subtitle: {
+    textAlign: 'center',
+    marginBottom: 32,
+    paddingHorizontal: 16,
+    lineHeight: 22,
+    letterSpacing: 0.2,
   },
-  cta:{
-    borderRadius:14,
-    marginVertical:12,
+  inputContainer: {
+    width: '100%',
+    marginBottom: 16,
+  },
+  label: {
+    marginBottom: 8,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    fontSize: 12,
+  },
+  inputWrapper: {
+    position: 'relative',
+  },
+  inputIcon: {
+    position: 'absolute',
+    left: 16,
+    top: 16,
+    zIndex: 1,
+  },
+  input: {
+    marginBottom: 0,
+    backgroundColor: 'transparent',
+  },
+  inputContent: {
+    paddingLeft: 8,
+  },
+  inputOutline: {
+    borderRadius: 12,
+    borderWidth: 2,
+  },
+  errorText: {
+    marginBottom: 8,
+    textAlign: 'center',
+    width: '100%',
+  },
+  statusText: {
+    marginBottom: 8,
+    textAlign: 'center',
+    width: '100%',
+  },
+  cta: {
+    width: '100%',
+    height: 52,
+    borderRadius: 12,
+    marginTop: 8,
+    elevation: 4,
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  ctaLabel: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  ctaContent: {
+    height: 52,
+    flexDirection: 'row-reverse',
+  },
+  resendContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 16,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  resendLabel: {
+    fontWeight: '600',
+    fontSize: 14,
   },
 });
-export default ResetPasswordScreen;

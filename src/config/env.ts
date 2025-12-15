@@ -1,7 +1,7 @@
 export const ENV = {
   API_BASE_URL: 'https://ksit-ar-backend.onrender.com/api',
 
-  UE_PACKAGE_NAME: 'com.epicgames.real',
+  UE_PACKAGE_NAME: 'com.epicgames.[PROJECT]',
   UE_ACTIVITY_NAME: 'com.epicgames.unreal.GameActivity',
 };
 

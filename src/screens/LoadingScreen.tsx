@@ -1,28 +1,37 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { ActivityIndicator, Text } from 'react-native-paper';
+import { View, StyleSheet } from 'react-native';
+import { ActivityIndicator, Text, useTheme } from 'react-native-paper';
+import Icon from 'react-native-vector-icons/Feather';
+import LinearGradient from 'react-native-linear-gradient';
 
-const BLUE = "#0B5ED7"; // Same dark blue used in Login
+export const LoadingScreen = () => {
+  const theme = useTheme();
 
-export const LoadingScreen = ({ navigation }) => {
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={[theme.colors.primary, theme.colors.primaryContainer || '#3B82F6']}
+      start={{x: 0, y: 0}}
+      end={{x: 1, y: 1}}
+      style={styles.container}>
+      
+      {/* Icon Circle */}
+      <View style={styles.iconCircle}>
+        <Icon name="box" size={40} color="#FFFFFF" />
+      </View>
 
-      <ActivityIndicator size="large" color={BLUE} />
+      {/* Spinner */}
+      <ActivityIndicator size="large" color="#FFFFFF" style={styles.spinner} />
 
-      <Text style={styles.text}>
+      {/* Loading Text */}
+      <Text variant="bodyLarge" style={styles.text}>
         Preparing your campus experience...
       </Text>
 
-      {/* CREATE ACCOUNT BUTTON */}
-      <TouchableOpacity
-        style={styles.createBtn}
-        onPress={() => navigation?.navigate("Register")}
-      >
-        <Text style={styles.createLabel}>Create an account</Text>
-      </TouchableOpacity>
-
-    </View>
+      {/* Subtitle */}
+      <Text variant="bodySmall" style={styles.subtitle}>
+        Please wait a moment
+      </Text>
+    </LinearGradient>
   );
 };
 
@@ -32,68 +41,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#F0F6FF',
   },
-
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  spinner: {
+    marginBottom: 16,
+  },
   text: {
-    marginTop: 18,
-    fontSize: 15,
-    color: '#003E80',
-    fontWeight: '500',
-  },
-
-  // 🔵 Create Account Button (same style as login page)
-  createBtn: {
-    marginTop: 30,
-    width: "80%",
-    backgroundColor: BLUE,
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 3,
-  },
-
-  createLabel: {
-    color: "#FFFFFF",
+    marginTop: 8,
     fontSize: 16,
-    fontWeight: "700",
+    color: '#FFFFFF',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  subtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: '#E8F1FF',
+    textAlign: 'center',
+    opacity: 0.9,
   },
 });
 
 export default LoadingScreen;
-
-
-/*import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { ActivityIndicator, Text } from 'react-native-paper';
-
-export const LoadingScreen = () => {
-  return (
-    <View style={styles.container}>
-      <ActivityIndicator size="large" color="#0057B8" />
-
-      <Text style={styles.text}>
-        Preparing your campus experience...
-      </Text>
-    </View>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: '#F0F6FF', // Soft light blue premium background
-  },
-  text: {
-    marginTop: 18,
-    fontSize: 15,
-    color: '#003E80',
-    fontWeight: '500',
-  },
-});
-
-export default LoadingScreen;*/
