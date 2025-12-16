@@ -214,34 +214,40 @@ export const MainMenuScreen = ({ navigation }: Props) => {
               )}
             </Card.Content>
 
+            {/* ✅ CORRECT LOCATION FOR AR BUTTONS */}
             <Card.Actions style={styles.cardActions}>
-			<KSITButton
-				mode="outlined"
-				onPress={handleInstall}
-				style={[styles.actionBtn, { borderColor: '#8B5CF6' }]}
-				labelStyle={{ color: '#8B5CF6', fontWeight: '600' }}
-				icon={() => <Icon name="download" size={16} color="#8B5CF6" />}
-				compact>
-				Install
-			</KSITButton>
+              {!available && (
+                <KSITButton
+                  mode="outlined"
+                  onPress={handleInstall}
+                  style={[styles.actionBtn, { borderColor: '#8B5CF6' }]}
+                  labelStyle={{ color: '#8B5CF6', fontWeight: '600' }}
+                  icon={() => <Icon name="download" size={16} color="#8B5CF6" />}
+                  compact>
+                  Install
+                </KSITButton>
+              )}
 
-			<KSITButton
-				mode="contained"
-				onPress={handleLaunch}
-				disabled={!available}
-				loading={loading}
-				style={[styles.launchBtn, { 
-				backgroundColor: available ? '#8B5CF6' : '#CBD5E1',
-				}]}
-				labelStyle={{ 
-				color: '#FFFFFF',
-				fontWeight: '600' 
-				}}
-				icon={() => <Icon name="zap" size={16} color="#FFFFFF" />}
-				compact>
-				Launch
-			</KSITButton>
-			</Card.Actions>
+              <KSITButton
+                mode="contained"
+                onPress={handleLaunch}
+                disabled={!available}
+                loading={loading}
+                style={[
+                  available ? styles.launchBtnFull : styles.launchBtn,
+                  { 
+                    backgroundColor: available ? '#8B5CF6' : '#CBD5E1',
+                  }
+                ]}
+                labelStyle={{ 
+                  color: '#FFFFFF',
+                  fontWeight: '600' 
+                }}
+                icon={() => <Icon name="zap" size={16} color="#FFFFFF" />}
+                compact>
+                Launch
+              </KSITButton>
+            </Card.Actions>
           </Card>
         )}
 
@@ -383,6 +389,11 @@ const styles = StyleSheet.create({
   },
 
   launchBtn: {
+    flex: 1,
+    borderRadius: 10,
+  },
+
+  launchBtnFull: {
     flex: 1,
     borderRadius: 10,
   },
