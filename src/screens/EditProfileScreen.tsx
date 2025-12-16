@@ -27,7 +27,7 @@ export const EditProfileScreen = ({ navigation }: Props) => {
     email: user?.email || '',
     phone: user?.phone || '',
   });
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(user?.profileImage || null);
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,15 +36,20 @@ export const EditProfileScreen = ({ navigation }: Props) => {
     setError(null);
     setLoading(true);
     try {
+      console.log('=== SAVING PROFILE ===');
+      console.log('Profile Image:', profileImage ? 'Image set' : 'No image');
+      
       await updateProfile({
         name: form.name,
         email: form.email,
         phone: form.phone,
-		profileImage: profileImage,
+        profileImage: profileImage,
       });
 
+      Alert.alert('Success', 'Profile updated successfully!');
       navigation.goBack();
     } catch (err) {
+      console.log('Save error:', err);
       setError(
         err instanceof Error ? err.message : 'Unable to update profile'
       );
@@ -54,85 +59,105 @@ export const EditProfileScreen = ({ navigation }: Props) => {
   };
 
   const handleImagePicker = async () => {
-  Alert.alert(
-    "Change Profile Picture",
-    "Choose an option",
-    [
-      {
-        text: "Take Photo",
-        onPress: async () => {
-          // Request camera permission for Android
-          if (Platform.OS === 'android') {
-            try {
-              const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.CAMERA,
-                {
-                  title: 'Camera Permission',
-                  message: 'App needs access to your camera',
-                  buttonNeutral: 'Ask Me Later',
-                  buttonNegative: 'Cancel',
-                  buttonPositive: 'OK',
+    Alert.alert(
+      "Change Profile Picture",
+      "Choose an option",
+      [
+        {
+          text: "Take Photo",
+          onPress: async () => {
+            if (Platform.OS === 'android') {
+              try {
+                const granted = await PermissionsAndroid.request(
+                  PermissionsAndroid.PERMISSIONS.CAMERA,
+                  {
+                    title: 'Camera Permission',
+                    message: 'App needs access to your camera',
+                    buttonNeutral: 'Ask Me Later',
+                    buttonNegative: 'Cancel',
+                    buttonPositive: 'OK',
+                  }
+                );
+                
+                if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+                  Alert.alert('Permission Denied', 'Camera permission is required');
+                  return;
                 }
-              );
-              
-              if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-                Alert.alert('Permission Denied', 'Camera permission is required');
+              } catch (err) {
+                console.warn(err);
                 return;
               }
-            } catch (err) {
-              console.warn(err);
-              return;
             }
-          }
 
-          // Open camera
-          launchCamera(
-            {
-              mediaType: 'photo',
-              cameraType: 'front',
-              quality: 0.8,
-              saveToPhotos: false,
-            },
-            (response) => {
-              if (response.didCancel) {
-                console.log('User cancelled camera');
-              } else if (response.errorCode) {
-                console.log('Camera Error: ', response.errorMessage);
-                Alert.alert('Camera Error', response.errorMessage || 'Failed to open camera');
-              } else if (response.assets && response.assets[0]) {
-                setProfileImage(response.assets[0].uri || null);
+            launchCamera(
+              {
+                mediaType: 'photo',
+                cameraType: 'front',
+                quality: 0.3,  // ✅ Lower quality for smaller file
+                maxWidth: 400,
+                maxHeight: 400,
+                includeBase64: true,  // ✅ CRITICAL: Enable base64
+                saveToPhotos: false,
+              },
+              (response) => {
+                if (response.didCancel) {
+                  console.log('User cancelled camera');
+                } else if (response.errorCode) {
+                  console.log('Camera Error:', response.errorMessage);
+                  Alert.alert('Camera Error', response.errorMessage || 'Failed to open camera');
+                } else if (response.assets && response.assets[0]) {
+                  const base64 = response.assets[0].base64;
+                  if (base64) {
+                    const imageUri = `data:image/jpeg;base64,${base64}`;
+                    console.log('Image captured, size:', imageUri.length);
+                    setProfileImage(imageUri);
+                    Alert.alert('Success', 'Photo captured! Don\'t forget to save changes.');
+                  } else {
+                    Alert.alert('Error', 'Failed to process image');
+                  }
+                }
               }
-            }
-          );
-        }
-      },
-      {
-        text: "Choose from Gallery",
-        onPress: () => {
-          launchImageLibrary(
-            {
-              mediaType: 'photo',
-              quality: 0.8,
-            },
-            (response) => {
-              if (response.didCancel) {
-                console.log('User cancelled gallery');
-              } else if (response.errorCode) {
-                console.log('Gallery Error: ', response.errorMessage);
-              } else if (response.assets && response.assets[0]) {
-                setProfileImage(response.assets[0].uri || null);
+            );
+          }
+        },
+        {
+          text: "Choose from Gallery",
+          onPress: () => {
+            launchImageLibrary(
+              {
+                mediaType: 'photo',
+                quality: 0.3,  // ✅ Lower quality
+                maxWidth: 400,
+                maxHeight: 400,
+                includeBase64: true,  // ✅ CRITICAL: Enable base64
+              },
+              (response) => {
+                if (response.didCancel) {
+                  console.log('User cancelled gallery');
+                } else if (response.errorCode) {
+                  console.log('Gallery Error:', response.errorMessage);
+                } else if (response.assets && response.assets[0]) {
+                  const base64 = response.assets[0].base64;
+                  if (base64) {
+                    const imageUri = `data:image/jpeg;base64,${base64}`;
+                    console.log('Image selected, size:', imageUri.length);
+                    setProfileImage(imageUri);
+                    Alert.alert('Success', 'Photo selected! Don\'t forget to save changes.');
+                  } else {
+                    Alert.alert('Error', 'Failed to process image');
+                  }
+                }
               }
-            }
-          );
+            );
+          }
+        },
+        {
+          text: "Cancel",
+          style: "cancel"
         }
-      },
-      {
-        text: "Cancel",
-        style: "cancel"
-      }
-    ]
-  );
-};
+      ]
+    );
+  };
 
   return (
     <ScreenContainer>
@@ -140,7 +165,7 @@ export const EditProfileScreen = ({ navigation }: Props) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
         
-        {/* 🔵 Gradient Header with Avatar */}
+        {/* Gradient Header with Avatar */}
         <LinearGradient
           colors={[theme.colors.primary, theme.colors.primaryContainer || '#1D4ED8']}
           start={{x: 0, y: 0}}
@@ -154,14 +179,19 @@ export const EditProfileScreen = ({ navigation }: Props) => {
                 <Image 
                   source={{ uri: profileImage }} 
                   style={styles.avatarImage}
+                  onError={(error) => {
+                    console.log('Image load error:', error);
+                  }}
                 />
               ) : (
                 <Icon name="user" size={48} color="#FFFFFF" />
               )}
             </View>
+            {/* Camera Button */}
             <TouchableOpacity 
               style={styles.editAvatarBtn}
-              onPress={handleImagePicker}>
+              onPress={handleImagePicker}
+              activeOpacity={0.7}>
               <Icon name="camera" size={16} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
@@ -171,7 +201,7 @@ export const EditProfileScreen = ({ navigation }: Props) => {
           </Text>
         </LinearGradient>
 
-        {/* ⚪ Form Card */}
+        {/* Form Card */}
         <Card 
           style={[styles.card, { 
             backgroundColor: theme.colors.surface,
